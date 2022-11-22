@@ -1,0 +1,42 @@
+---
+resources:
+
+- name: keycloak-cas
+  type: git
+  icon: github
+  public: true
+  source:
+    branch: main
+    password: (("github.com"/token.token))
+    uri: https://github.com/RoboJackets/keycloak-cas
+    username: x-access-token
+  tags:
+  - resources
+
+jobs:
+
+- name: build
+  public: true
+  serial: true
+  plan:
+  - get: keycloak-cas
+    trigger: true
+
+  - task: build-jar
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: maven
+          tag: 3-amazoncorretto-11
+      inputs:
+      - name: keycloak-cas
+      run:
+        path: mvn
+        dir: keycloak-cas
+        args:
+        - clean
+        - package
+        - --settings
+        - settings.xml
