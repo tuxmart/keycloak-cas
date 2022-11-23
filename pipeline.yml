@@ -34,7 +34,7 @@ jobs:
       inputs:
       - name: keycloak-cas
       params:
-        GITHUB_TOKEN: (("github.com"/token.token))
+        GITHUB_TOKEN: ((github-packages-token))
       run:
         path: mvn
         dir: keycloak-cas
