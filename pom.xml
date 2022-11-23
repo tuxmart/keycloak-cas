@@ -207,6 +207,11 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
+		<repository>
+			<id>github</id>
+			<name>GitHub RoboJackets Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/RoboJackets/keycloak-cas</url>
+		</repository>
 
 	</distributionManagement>
 </project>

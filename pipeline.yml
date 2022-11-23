@@ -12,6 +12,7 @@ resources:
     username: x-access-token
   tags:
   - resources
+  webhook_token: ((webhook-token))
 
 jobs:
 
@@ -38,5 +39,6 @@ jobs:
         args:
         - clean
         - package
+        - deploy
         - --settings
         - settings.xml
