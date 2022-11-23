@@ -1,5 +1,6 @@
 package io.github.johnjcool.keycloak.broker.cas.mappers;
 
+import io.github.johnjcool.keycloak.broker.cas.CasIdentityProvider;
 import io.github.johnjcool.keycloak.broker.cas.CasIdentityProviderFactory;
 
 import java.util.ArrayList;
@@ -9,12 +10,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.util.CollectionUtil;
-import org.keycloak.models.IdentityProviderMapperModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 
 public class UserAttributeMapper extends AbstractAttributeMapper {
@@ -28,6 +27,8 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 	private static final String EMAIL = "email";
 	private static final String FIRST_NAME = "firstName";
 	private static final String LAST_NAME = "lastName";
+
+	protected static final Logger logger = Logger.getLogger(CasIdentityProvider.class);
 
 	static {
 		ProviderConfigProperty property;
@@ -77,11 +78,16 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 			final BrokeredIdentityContext context) {
 		String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
 		if (attribute == null || attribute.isEmpty()) {
+			logger.debug("preprocessFederatedIdentity called with empty attribute");
 			return;
 		}
 
+		logger.debug("preprocessFederatedIdentity called with attribute "+attribute);
+
 		Object value = getAttributeValue(mapperModel, context);
 		List<String> values = toList(value);
+
+		logger.debug("Values: "+values.toString());
 
 		if (EMAIL.equalsIgnoreCase(attribute)) {
 			setIfNotEmpty(context::setEmail, values);
@@ -112,10 +118,16 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 			final BrokeredIdentityContext context) {
 		String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
 		if (attribute == null || attribute.isEmpty()) {
+			logger.debug("updateBrokeredUser called with empty attribute");
 			return;
 		}
+		logger.debug("preprocessFederatedIdentity called with attribute "+attribute);
+
 		Object value = getAttributeValue(mapperModel, context);
 		List<String> values = toList(value);
+
+		logger.debug("Values: "+values.toString());
+		
 		if (EMAIL.equalsIgnoreCase(attribute)) {
 			setIfNotEmpty(user::setEmail, values);
 		} else if (FIRST_NAME.equalsIgnoreCase(attribute)) {
@@ -130,6 +142,11 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 				user.removeAttribute(attribute);
 			}
 		}
+	}
+
+	@Override
+	public boolean supportsSyncMode(IdentityProviderSyncMode syncMode) {
+		return true;
 	}
 
 	@Override
