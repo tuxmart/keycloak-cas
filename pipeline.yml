@@ -33,6 +33,8 @@ jobs:
           tag: 3-amazoncorretto-11
       inputs:
       - name: keycloak-cas
+      params:
+        GITHUB_TOKEN: (("github.com"/token.token))
       run:
         path: mvn
         dir: keycloak-cas
