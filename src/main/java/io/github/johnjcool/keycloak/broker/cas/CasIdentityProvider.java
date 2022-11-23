@@ -14,6 +14,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -23,8 +24,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -40,6 +39,7 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
+import org.keycloak.sessions.AuthenticationSessionModel;
 
 public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityProviderConfig> {
 
@@ -52,7 +52,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 	public CasIdentityProvider(final KeycloakSession session, final CasIdentityProviderConfig config) {
 		super(session, config);
-		client = ResteasyClientBuilder.newClient(ResteasyProviderFactory.getInstance());
+		client = ClientBuilder.newClient();
 	}
 
 	@Override
@@ -167,7 +167,9 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
 				user.setIdpConfig(config);
 				user.setIdp(CasIdentityProvider.this);
-				user.setCode(state);
+				AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
+				session.getContext().setAuthenticationSession(authSession);
+				user.setAuthenticationSession(authSession);
 				return user;
 			} catch (Exception e) {
 				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);

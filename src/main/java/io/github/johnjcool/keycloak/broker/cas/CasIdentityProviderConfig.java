@@ -11,6 +11,10 @@ public class CasIdentityProviderConfig extends IdentityProviderModel {
     private static final String DEFAULT_CAS_SERVICE_VALIDATE_SUFFFIX = "serviceValidate";
     private static final String DEFAULT_CAS_3_PROTOCOL_PREFIX = "p3";
 
+    public CasIdentityProviderConfig() {
+        super();
+    }
+
     public CasIdentityProviderConfig(final IdentityProviderModel model) {
         super(model);
     }
