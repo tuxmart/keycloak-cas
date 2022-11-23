@@ -7,6 +7,7 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createLogou
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValidateServiceUrl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
 
@@ -48,7 +49,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 	public static final String USER_ATTRIBUTES = "UserAttributes";
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final XmlMapper xmlMapper = new XmlMapper();
 
 	public CasIdentityProvider(final KeycloakSession session, final CasIdentityProviderConfig config) {
 		super(session, config);
@@ -151,7 +152,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 					LOGGER_DUMP_USER_PROFILE.debug("User Profile XML Data for provider " + config.getAlias() + ": " + response.asString());
 				}
 
-				ServiceResponse serviceResponse = objectMapper.readValue(response.asString(), ServiceResponse.class);
+				ServiceResponse serviceResponse = xmlMapper.readValue(response.asString(), ServiceResponse.class);
 				if (serviceResponse.getFailure() != null) {
 					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
 							+ ") for authentication by External IdP " + config.getProviderId());
