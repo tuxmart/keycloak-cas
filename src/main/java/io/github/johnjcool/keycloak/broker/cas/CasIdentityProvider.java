@@ -5,6 +5,8 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.PROVIDER_PA
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createAuthenticationUrl;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createLogoutUrl;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValidateServiceUrl;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
 
@@ -13,9 +15,6 @@ import java.net.URI;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -28,6 +27,7 @@ import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
+import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -48,11 +48,10 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 	public static final String USER_ATTRIBUTES = "UserAttributes";
 
-	private final Client client;
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	public CasIdentityProvider(final KeycloakSession session, final CasIdentityProviderConfig config) {
 		super(session, config);
-		client = ClientBuilder.newClient();
 	}
 
 	@Override
@@ -109,7 +108,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 		public Response authResponse(@QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket, @QueryParam(PROVIDER_PARAMETER_STATE) final String state) {
 			try {
 				CasIdentityProviderConfig config = getConfig();
-				BrokeredIdentityContext federatedIdentity = getFederatedIdentity(client, config, ticket, uriInfo, state);
+				BrokeredIdentityContext federatedIdentity = getFederatedIdentity(config, ticket, uriInfo, state);
 
 				return callback.authenticated(federatedIdentity);
 			} catch (Exception e) {
@@ -141,22 +140,18 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 			return AuthenticationManager.finishBrowserLogout(session, realm, userSession, uriInfo, clientConnection, headers);
 		}
 
-		private BrokeredIdentityContext getFederatedIdentity(final Client client, final CasIdentityProviderConfig config, final String ticket,
+		private BrokeredIdentityContext getFederatedIdentity(final CasIdentityProviderConfig config, final String ticket,
 				final UriInfo uriInfo, final String state) {
-			Response response = null;
-			try {
-				WebTarget target = client.target(createValidateServiceUrl(config, ticket, uriInfo, state));
-				response = target.request(MediaType.APPLICATION_XML_TYPE).get();
+			try (SimpleHttp.Response response = SimpleHttp.doGet(createValidateServiceUrl(config, ticket, uriInfo, state).build().toURL().toString(), session).asResponse()) {
 				if (response.getStatus() != 200) {
 					throw new Exception("Failed : HTTP error code : " + response.getStatus());
 				}
 
-				response.bufferEntity();
 				if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled()) {
-					LOGGER_DUMP_USER_PROFILE.debug("User Profile XML Data for provider " + config.getAlias() + ": " + response.readEntity(String.class));
+					LOGGER_DUMP_USER_PROFILE.debug("User Profile XML Data for provider " + config.getAlias() + ": " + response.asString());
 				}
 
-				ServiceResponse serviceResponse = response.readEntity(ServiceResponse.class);
+				ServiceResponse serviceResponse = objectMapper.readValue(response.asString(), ServiceResponse.class);
 				if (serviceResponse.getFailure() != null) {
 					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
 							+ ") for authentication by External IdP " + config.getProviderId());
@@ -173,10 +168,6 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				return user;
 			} catch (Exception e) {
 				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);
-			} finally {
-				if (response != null) {
-					response.close();
-				}
 			}
 		}
 	}
