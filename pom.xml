@@ -4,10 +4,10 @@
 
 	<groupId>io.github.johnjcool</groupId>
 	<artifactId>keycloak-cas-services</artifactId>
-	<version>8.0.0-SNAPSHOT</version>
+	<version>20.0.1-SNAPSHOT</version>
 	<name>Keycloak CAS Services</name>
 	<url>https://github.com/johnjcool/keycloak-cas-services</url>
-	<description>Extend Keycloak with CAS IDP.</description>
+	<description>Extend Keycloak with CAS IdP</description>
 
 	<licenses>
 		<license>
@@ -132,6 +132,22 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
