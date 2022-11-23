@@ -6,11 +6,10 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createAuthe
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createLogoutUrl;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValidateServiceUrl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
 
+import java.io.StringReader;
 import java.net.URI;
 
 import javax.ws.rs.GET;
@@ -22,6 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
@@ -49,7 +51,15 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 	public static final String USER_ATTRIBUTES = "UserAttributes";
 
-	private static final XmlMapper xmlMapper = new XmlMapper();
+	private static final Unmarshaller unmarshaller;
+
+	static {
+		try {
+			unmarshaller = JAXBContext.newInstance(ServiceResponse.class).createUnmarshaller();
+		} catch (JAXBException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public CasIdentityProvider(final KeycloakSession session, final CasIdentityProviderConfig config) {
 		super(session, config);
@@ -152,7 +162,8 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 					LOGGER_DUMP_USER_PROFILE.debug("User Profile XML Data for provider " + config.getAlias() + ": " + response.asString());
 				}
 
-				ServiceResponse serviceResponse = xmlMapper.readValue(response.asString(), ServiceResponse.class);
+				ServiceResponse serviceResponse = (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
+
 				if (serviceResponse.getFailure() != null) {
 					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
 							+ ") for authentication by External IdP " + config.getProviderId());
