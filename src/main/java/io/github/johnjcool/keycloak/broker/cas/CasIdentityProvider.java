@@ -185,7 +185,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				user.setAuthenticationSession(authSession);
 				return user;
 			} catch (WebApplicationException e) {
-				logger.error(e.getResponse().toString());
+				logger.error(e.getResponse().readEntity(String.class));
 				throw new IdentityBrokerException("CAS returned 400 response code", e);
 			} catch (Exception e) {
 				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);
