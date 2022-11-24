@@ -43,4 +43,4 @@ jobs:
         - package
         - deploy
         - --settings
-        - settings.xml
+        - .concourse/settings.xml
