@@ -1,12 +1,9 @@
 package io.github.johnjcool.keycloak.broker.cas.mappers;
 
-import io.github.johnjcool.keycloak.broker.cas.CasIdentityProvider;
 import io.github.johnjcool.keycloak.broker.cas.CasIdentityProviderFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -84,20 +81,18 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 
 		logger.debug("preprocessFederatedIdentity called with attribute "+attribute);
 
-		Object value = getAttributeValue(mapperModel, context);
-		List<String> values = toList(value);
+		List<String> value = getAttributeValue(mapperModel, context);
 
-		logger.debug("Values: "+values.toString());
+		logger.debug("Values: "+value.toString());
 
 		if (EMAIL.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(context::setEmail, values);
+			setIfNotEmpty(context::setEmail, value);
 		} else if (FIRST_NAME.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(context::setFirstName, values);
+			setIfNotEmpty(context::setFirstName, value);
 		} else if (LAST_NAME.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(context::setLastName, values);
+			setIfNotEmpty(context::setLastName, value);
 		} else {
-			List<String> valuesToString = values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
-			context.setUserAttribute(attribute, valuesToString);
+			context.setUserAttribute(attribute, value);
 		}
 	}
 
@@ -106,13 +101,6 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 			consumer.accept(values.get(0));
 		}
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List<String> toList(final Object value) {
-		List<Object> values = (value instanceof List) ? (List) value : Collections.singletonList(value);
-		return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
-	}
-
 	@Override
 	public void updateBrokeredUser(final KeycloakSession session, final RealmModel realm, final UserModel user, final IdentityProviderMapperModel mapperModel,
 			final BrokeredIdentityContext context) {
@@ -123,22 +111,21 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 		}
 		logger.debug("preprocessFederatedIdentity called with attribute "+attribute);
 
-		Object value = getAttributeValue(mapperModel, context);
-		List<String> values = toList(value);
+		List<String> value = getAttributeValue(mapperModel, context);
 
-		logger.debug("Values: "+values.toString());
+		logger.debug("Values: "+value.toString());
 
 		if (EMAIL.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(user::setEmail, values);
+			setIfNotEmpty(user::setEmail, value);
 		} else if (FIRST_NAME.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(user::setFirstName, values);
+			setIfNotEmpty(user::setFirstName, value);
 		} else if (LAST_NAME.equalsIgnoreCase(attribute)) {
-			setIfNotEmpty(user::setLastName, values);
+			setIfNotEmpty(user::setLastName, value);
 		} else {
 			List<String> current = user.getAttributeStream(attribute).collect(Collectors.toList());
-			if (!CollectionUtil.collectionEquals(values, current)) {
-				user.setAttribute(attribute, values);
-			} else if (values.isEmpty()) {
+			if (!CollectionUtil.collectionEquals(value, current)) {
+				user.setAttribute(attribute, value);
+			} else if (value.isEmpty()) {
 				user.removeAttribute(attribute);
 			}
 		}
