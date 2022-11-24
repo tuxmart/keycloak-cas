@@ -7,11 +7,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.models.IdentityProviderMapperModel;
 
 public abstract class AbstractAttributeMapper extends AbstractIdentityProviderMapper {
+
+	protected static final Logger logger = Logger.getLogger(AbstractAttributeMapper.class);
 
 	public static final String ATTRIBUTE = "attribute";
 	public static final String ATTRIBUTE_VALUE = "attribute.value";
@@ -20,6 +23,7 @@ public abstract class AbstractAttributeMapper extends AbstractIdentityProviderMa
 		String attributeName = mapperModel.getConfig().get(ATTRIBUTE);
 		@SuppressWarnings("unchecked")
 		Map<String, Object> userAttributes = (Map<String, Object>) user.getContextData().get(CasIdentityProvider.USER_ATTRIBUTES);
+		logger.debug("getAttributeValue attributes: " + userAttributes);
 		if (userAttributes.containsKey(attributeName)) {
 			return getAttributeValue(userAttributes.get(attributeName));
 		}

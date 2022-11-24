@@ -164,11 +164,16 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 				ServiceResponse serviceResponse = (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
 
+				logger.debug("Parsed ServiceResponse: "+serviceResponse.toString());
+
 				if (serviceResponse.getFailure() != null) {
 					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
 							+ ") for authentication by External IdP " + config.getProviderId());
 				}
 				Success success = serviceResponse.getSuccess();
+
+				logger.debug("Parsed Success: " + success);
+				logger.debug("Parsed attributes: " + success.getAttributes());
 				BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser());
 				user.setUsername(success.getUser());
 				user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());

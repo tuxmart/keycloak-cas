@@ -28,7 +28,7 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 	private static final String FIRST_NAME = "firstName";
 	private static final String LAST_NAME = "lastName";
 
-	protected static final Logger logger = Logger.getLogger(CasIdentityProvider.class);
+	protected static final Logger logger = Logger.getLogger(UserAttributeMapper.class);
 
 	static {
 		ProviderConfigProperty property;
@@ -127,7 +127,7 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 		List<String> values = toList(value);
 
 		logger.debug("Values: "+values.toString());
-		
+
 		if (EMAIL.equalsIgnoreCase(attribute)) {
 			setIfNotEmpty(user::setEmail, values);
 		} else if (FIRST_NAME.equalsIgnoreCase(attribute)) {
