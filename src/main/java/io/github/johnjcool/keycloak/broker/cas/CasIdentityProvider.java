@@ -15,6 +15,7 @@ import java.net.URI;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -164,7 +165,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
 				ServiceResponse serviceResponse = (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
 
-				logger.debug("Parsed ServiceResponse: "+serviceResponse.toString());
+				logger.debug("Parsed ServiceResponse: " + serviceResponse.toString());
 
 				if (serviceResponse.getFailure() != null) {
 					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
@@ -183,6 +184,9 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				session.getContext().setAuthenticationSession(authSession);
 				user.setAuthenticationSession(authSession);
 				return user;
+			} catch (WebApplicationException e) {
+				logger.error(e.getResponse().toString());
+				throw new IdentityBrokerException("CAS returned 400 response code", e);
 			} catch (Exception e) {
 				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);
 			}
