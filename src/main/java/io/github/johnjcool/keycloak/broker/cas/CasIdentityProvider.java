@@ -8,12 +8,12 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValid
 
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -45,8 +45,6 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityProviderConfig> {
 
   protected static final Logger logger = Logger.getLogger(CasIdentityProvider.class);
-  protected static final Logger LOGGER_DUMP_USER_PROFILE =
-      Logger.getLogger("org.keycloak.social.user_profile_dump");
 
   public static final String USER_ATTRIBUTES = "UserAttributes";
 
@@ -104,13 +102,13 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     RealmModel realm;
     EventBuilder event;
 
-    @Context protected KeycloakSession session;
+    @Context private KeycloakSession session;
 
-    @Context protected ClientConnection clientConnection;
+    @Context private ClientConnection clientConnection;
 
-    @Context protected HttpHeaders headers;
+    @Context private HttpHeaders headers;
 
-    @Context protected UriInfo uriInfo;
+    @Context private UriInfo uriInfo;
 
     Endpoint(
         final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event) {
@@ -130,8 +128,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
         return callback.authenticated(federatedIdentity);
       } catch (Exception e) {
-        logger.error(
-            "Failed to call delegating authentication identity provider's callback method.", e);
+        logger.error("Failed to complete CAS authentication", e);
       }
       event.event(EventType.LOGIN);
       event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
@@ -181,34 +178,32 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
                   session)
               .asResponse()) {
         if (response.getStatus() != 200) {
-          throw new Exception("Failed : HTTP error code : " + response.getStatus());
+          logger.error(response.asString());
+          throw new IdentityBrokerException(
+              "CAS returned a non-200 response code: " + response.getStatus());
         }
 
-        if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled()) {
-          LOGGER_DUMP_USER_PROFILE.debug(
-              "User Profile XML Data for provider "
-                  + config.getAlias()
-                  + ": "
-                  + response.asString());
+        if (logger.isDebugEnabled()) {
+          logger.debug("Raw XML from CAS: " + response.asString());
         }
 
         ServiceResponse serviceResponse =
             (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
 
-        logger.debug("Parsed ServiceResponse: " + serviceResponse.toString());
+        if (logger.isDebugEnabled()) {
+          logger.debug("Parsed response: " + serviceResponse);
+        }
 
         if (serviceResponse.getFailure() != null) {
-          throw new Exception(
-              serviceResponse.getFailure().getCode()
+          throw new IdentityBrokerException(
+              "Failure response from CAS: "
+                  + serviceResponse.getFailure().getCode()
                   + "("
                   + serviceResponse.getFailure().getDescription()
-                  + ") for authentication by External IdP "
-                  + config.getProviderId());
+                  + ")");
         }
         Success success = serviceResponse.getSuccess();
 
-        logger.debug("Parsed Success: " + success);
-        logger.debug("Parsed attributes: " + success.getAttributes());
         BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser());
         user.setUsername(success.getUser());
         user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
@@ -219,12 +214,8 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         session.getContext().setAuthenticationSession(authSession);
         user.setAuthenticationSession(authSession);
         return user;
-      } catch (WebApplicationException e) {
-        logger.error(e.getResponse().readEntity(String.class));
-        throw new IdentityBrokerException("CAS returned 400 response code", e);
-      } catch (Exception e) {
-        throw new IdentityBrokerException(
-            "Could not fetch attributes from External IdP's userinfo endpoint.", e);
+      } catch (IOException | JAXBException e) {
+        throw new IdentityBrokerException("Failed to complete CAS authentication", e);
       }
     }
   }
