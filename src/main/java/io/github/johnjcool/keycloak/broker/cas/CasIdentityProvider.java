@@ -180,7 +180,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
 				user.setIdpConfig(config);
 				user.setIdp(CasIdentityProvider.this);
-				AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
+				AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
 				session.getContext().setAuthenticationSession(authSession);
 				user.setAuthenticationSession(authSession);
 				return user;
