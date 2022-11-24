@@ -8,10 +8,8 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValid
 
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
-
 import java.io.StringReader;
 import java.net.URI;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -25,7 +23,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-
 import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
@@ -47,149 +44,188 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 
 public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityProviderConfig> {
 
-	protected static final Logger logger = Logger.getLogger(CasIdentityProvider.class);
-	protected static final Logger LOGGER_DUMP_USER_PROFILE = Logger.getLogger("org.keycloak.social.user_profile_dump");
+  protected static final Logger logger = Logger.getLogger(CasIdentityProvider.class);
+  protected static final Logger LOGGER_DUMP_USER_PROFILE =
+      Logger.getLogger("org.keycloak.social.user_profile_dump");
 
-	public static final String USER_ATTRIBUTES = "UserAttributes";
+  public static final String USER_ATTRIBUTES = "UserAttributes";
 
-	private static final Unmarshaller unmarshaller;
+  private static final Unmarshaller unmarshaller;
 
-	static {
-		try {
-			unmarshaller = JAXBContext.newInstance(ServiceResponse.class).createUnmarshaller();
-		} catch (JAXBException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  static {
+    try {
+      unmarshaller = JAXBContext.newInstance(ServiceResponse.class).createUnmarshaller();
+    } catch (JAXBException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	public CasIdentityProvider(final KeycloakSession session, final CasIdentityProviderConfig config) {
-		super(session, config);
-	}
+  public CasIdentityProvider(
+      final KeycloakSession session, final CasIdentityProviderConfig config) {
+    super(session, config);
+  }
 
-	@Override
-	public Response performLogin(final AuthenticationRequest request) {
-		try {
-			URI authenticationUrl = createAuthenticationUrl(getConfig(), request).build();
-			return Response.seeOther(authenticationUrl).build();
-		} catch (Exception e) {
-			throw new IdentityBrokerException("Could send authentication request to cas provider.", e);
-		}
-	}
+  @Override
+  public Response performLogin(final AuthenticationRequest request) {
+    try {
+      URI authenticationUrl = createAuthenticationUrl(getConfig(), request).build();
+      return Response.seeOther(authenticationUrl).build();
+    } catch (Exception e) {
+      throw new IdentityBrokerException("Could send authentication request to cas provider.", e);
+    }
+  }
 
-	@Override
-	public Response keycloakInitiatedBrowserLogout(final KeycloakSession session, final UserSessionModel userSession, final UriInfo uriInfo,
-			final RealmModel realm) {
-		URI logoutUrl = createLogoutUrl(getConfig(), userSession, realm, uriInfo).build();
-		return Response.status(302).location(logoutUrl).build();
-	}
+  @Override
+  public Response keycloakInitiatedBrowserLogout(
+      final KeycloakSession session,
+      final UserSessionModel userSession,
+      final UriInfo uriInfo,
+      final RealmModel realm) {
+    URI logoutUrl = createLogoutUrl(getConfig(), userSession, realm, uriInfo).build();
+    return Response.status(302).location(logoutUrl).build();
+  }
 
-	@Override
-	public Response retrieveToken(final KeycloakSession session, final FederatedIdentityModel identity) {
-		return Response.ok(identity.getToken()).type(MediaType.APPLICATION_JSON).build();
-	}
+  @Override
+  public Response retrieveToken(
+      final KeycloakSession session, final FederatedIdentityModel identity) {
+    return Response.ok(identity.getToken()).type(MediaType.APPLICATION_JSON).build();
+  }
 
-	@Override
-	public Endpoint callback(final RealmModel realm, final org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback callback, final EventBuilder event) {
-		return new Endpoint(callback, realm, event);
-	}
+  @Override
+  public Endpoint callback(
+      final RealmModel realm,
+      final org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback callback,
+      final EventBuilder event) {
+    return new Endpoint(callback, realm, event);
+  }
 
-	public final class Endpoint {
-		AuthenticationCallback callback;
-		RealmModel realm;
-		EventBuilder event;
+  public final class Endpoint {
+    AuthenticationCallback callback;
+    RealmModel realm;
+    EventBuilder event;
 
-		@Context
-		protected KeycloakSession session;
+    @Context protected KeycloakSession session;
 
-		@Context
-		protected ClientConnection clientConnection;
+    @Context protected ClientConnection clientConnection;
 
-		@Context
-		protected HttpHeaders headers;
+    @Context protected HttpHeaders headers;
 
-		@Context
-		protected UriInfo uriInfo;
+    @Context protected UriInfo uriInfo;
 
-		Endpoint(final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event) {
-			this.callback = callback;
-			this.realm = realm;
-			this.event = event;
-		}
+    Endpoint(
+        final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event) {
+      this.callback = callback;
+      this.realm = realm;
+      this.event = event;
+    }
 
-		@GET
-		public Response authResponse(@QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket, @QueryParam(PROVIDER_PARAMETER_STATE) final String state) {
-			try {
-				CasIdentityProviderConfig config = getConfig();
-				BrokeredIdentityContext federatedIdentity = getFederatedIdentity(config, ticket, uriInfo, state);
+    @GET
+    public Response authResponse(
+        @QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket,
+        @QueryParam(PROVIDER_PARAMETER_STATE) final String state) {
+      try {
+        CasIdentityProviderConfig config = getConfig();
+        BrokeredIdentityContext federatedIdentity =
+            getFederatedIdentity(config, ticket, uriInfo, state);
 
-				return callback.authenticated(federatedIdentity);
-			} catch (Exception e) {
-				logger.error("Failed to call delegating authentication identity provider's callback method.", e);
-			}
-			event.event(EventType.LOGIN);
-			event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
-			return ErrorPage.error(session, null, Status.EXPECTATION_FAILED, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
-		}
+        return callback.authenticated(federatedIdentity);
+      } catch (Exception e) {
+        logger.error(
+            "Failed to call delegating authentication identity provider's callback method.", e);
+      }
+      event.event(EventType.LOGIN);
+      event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
+      return ErrorPage.error(
+          session, null, Status.EXPECTATION_FAILED, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+    }
 
-		@GET
-		@Path("logout_response")
-		public Response logoutResponse(@Context final UriInfo uriInfo, @QueryParam("state") final String state) {
-			UserSessionModel userSession = session.sessions().getUserSession(realm, state);
-			if (userSession == null) {
-				logger.error("no valid user session");
-				EventBuilder e = new EventBuilder(realm, session, clientConnection);
-				e.event(EventType.LOGOUT);
-				e.error(Errors.USER_SESSION_NOT_FOUND);
-				return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
-			}
-			if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
-				logger.error("usersession in different state");
-				EventBuilder e = new EventBuilder(realm, session, clientConnection);
-				e.event(EventType.LOGOUT);
-				e.error(Errors.USER_SESSION_NOT_FOUND);
-				return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
-			}
-			return AuthenticationManager.finishBrowserLogout(session, realm, userSession, uriInfo, clientConnection, headers);
-		}
+    @GET
+    @Path("logout_response")
+    public Response logoutResponse(
+        @Context final UriInfo uriInfo, @QueryParam("state") final String state) {
+      UserSessionModel userSession = session.sessions().getUserSession(realm, state);
+      if (userSession == null) {
+        logger.error("no valid user session");
+        EventBuilder e = new EventBuilder(realm, session, clientConnection);
+        e.event(EventType.LOGOUT);
+        e.error(Errors.USER_SESSION_NOT_FOUND);
+        return ErrorPage.error(
+            session,
+            null,
+            Response.Status.BAD_REQUEST,
+            Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+      }
+      if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
+        logger.error("usersession in different state");
+        EventBuilder e = new EventBuilder(realm, session, clientConnection);
+        e.event(EventType.LOGOUT);
+        e.error(Errors.USER_SESSION_NOT_FOUND);
+        return ErrorPage.error(
+            session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
+      }
+      return AuthenticationManager.finishBrowserLogout(
+          session, realm, userSession, uriInfo, clientConnection, headers);
+    }
 
-		private BrokeredIdentityContext getFederatedIdentity(final CasIdentityProviderConfig config, final String ticket,
-				final UriInfo uriInfo, final String state) {
-			try (SimpleHttp.Response response = SimpleHttp.doGet(createValidateServiceUrl(config, ticket, uriInfo, state).build().toURL().toString(), session).asResponse()) {
-				if (response.getStatus() != 200) {
-					throw new Exception("Failed : HTTP error code : " + response.getStatus());
-				}
+    private BrokeredIdentityContext getFederatedIdentity(
+        final CasIdentityProviderConfig config,
+        final String ticket,
+        final UriInfo uriInfo,
+        final String state) {
+      try (SimpleHttp.Response response =
+          SimpleHttp.doGet(
+                  createValidateServiceUrl(config, ticket, uriInfo, state)
+                      .build()
+                      .toURL()
+                      .toString(),
+                  session)
+              .asResponse()) {
+        if (response.getStatus() != 200) {
+          throw new Exception("Failed : HTTP error code : " + response.getStatus());
+        }
 
-				if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled()) {
-					LOGGER_DUMP_USER_PROFILE.debug("User Profile XML Data for provider " + config.getAlias() + ": " + response.asString());
-				}
+        if (LOGGER_DUMP_USER_PROFILE.isDebugEnabled()) {
+          LOGGER_DUMP_USER_PROFILE.debug(
+              "User Profile XML Data for provider "
+                  + config.getAlias()
+                  + ": "
+                  + response.asString());
+        }
 
-				ServiceResponse serviceResponse = (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
+        ServiceResponse serviceResponse =
+            (ServiceResponse) unmarshaller.unmarshal(new StringReader(response.asString()));
 
-				logger.debug("Parsed ServiceResponse: " + serviceResponse.toString());
+        logger.debug("Parsed ServiceResponse: " + serviceResponse.toString());
 
-				if (serviceResponse.getFailure() != null) {
-					throw new Exception(serviceResponse.getFailure().getCode() + "(" + serviceResponse.getFailure().getDescription()
-							+ ") for authentication by External IdP " + config.getProviderId());
-				}
-				Success success = serviceResponse.getSuccess();
+        if (serviceResponse.getFailure() != null) {
+          throw new Exception(
+              serviceResponse.getFailure().getCode()
+                  + "("
+                  + serviceResponse.getFailure().getDescription()
+                  + ") for authentication by External IdP "
+                  + config.getProviderId());
+        }
+        Success success = serviceResponse.getSuccess();
 
-				logger.debug("Parsed Success: " + success);
-				logger.debug("Parsed attributes: " + success.getAttributes());
-				BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser());
-				user.setUsername(success.getUser());
-				user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
-				user.setIdpConfig(config);
-				user.setIdp(CasIdentityProvider.this);
-				AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
-				session.getContext().setAuthenticationSession(authSession);
-				user.setAuthenticationSession(authSession);
-				return user;
-			} catch (WebApplicationException e) {
-				logger.error(e.getResponse().readEntity(String.class));
-				throw new IdentityBrokerException("CAS returned 400 response code", e);
-			} catch (Exception e) {
-				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);
-			}
-		}
-	}
+        logger.debug("Parsed Success: " + success);
+        logger.debug("Parsed attributes: " + success.getAttributes());
+        BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser());
+        user.setUsername(success.getUser());
+        user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
+        user.setIdpConfig(config);
+        user.setIdp(CasIdentityProvider.this);
+        AuthenticationSessionModel authSession =
+            this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
+        session.getContext().setAuthenticationSession(authSession);
+        user.setAuthenticationSession(authSession);
+        return user;
+      } catch (WebApplicationException e) {
+        logger.error(e.getResponse().readEntity(String.class));
+        throw new IdentityBrokerException("CAS returned 400 response code", e);
+      } catch (Exception e) {
+        throw new IdentityBrokerException(
+            "Could not fetch attributes from External IdP's userinfo endpoint.", e);
+      }
+    }
+  }
 }

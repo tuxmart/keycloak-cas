@@ -1,12 +1,10 @@
 package io.github.johnjcool.keycloak.broker.cas.model;
 
 import io.github.johnjcool.keycloak.broker.cas.jaxb.AttributesAdapter;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -15,33 +13,33 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Success implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	@XmlElement(name = "user", namespace = "http://www.yale.edu/tp/cas")
-	private String user;
+  @XmlElement(name = "user", namespace = "http://www.yale.edu/tp/cas")
+  private String user;
 
-	@XmlElement(name = "attributes", namespace = "http://www.yale.edu/tp/cas")
-	@XmlJavaTypeAdapter(AttributesAdapter.class)
-	private Map<String, List<String>> attributes = new HashMap<>();
+  @XmlElement(name = "attributes", namespace = "http://www.yale.edu/tp/cas")
+  @XmlJavaTypeAdapter(AttributesAdapter.class)
+  private Map<String, List<String>> attributes = new HashMap<>();
 
-	public String getUser() {
-		return user;
-	}
+  public String getUser() {
+    return user;
+  }
 
-	public void setUser(final String user) {
-		this.user = user;
-	}
+  public void setUser(final String user) {
+    this.user = user;
+  }
 
-	public Map<String, List<String>> getAttributes() {
-		return attributes;
-	}
+  public Map<String, List<String>> getAttributes() {
+    return attributes;
+  }
 
-	public void setAttributes(final Map<String, List<String>> attributes) {
-		this.attributes = attributes;
-	}
+  public void setAttributes(final Map<String, List<String>> attributes) {
+    this.attributes = attributes;
+  }
 
-	@Override
-	public String toString() {
-		return String.format("Success [user=%s, attributes=%s]", user, attributes);
-	}
+  @Override
+  public String toString() {
+    return String.format("Success [user=%s, attributes=%s]", user, attributes);
+  }
 }
