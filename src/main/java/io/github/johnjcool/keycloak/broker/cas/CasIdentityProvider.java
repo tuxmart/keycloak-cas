@@ -169,12 +169,14 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         final String ticket,
         final UriInfo uriInfo,
         final String state) {
+      logger.debug("Current state value: " + state);
       try (SimpleHttp.Response response =
           SimpleHttp.doGet(
-                  createValidateServiceUrl(config, ticket, uriInfo, state.replace('+', ' '))
+                  createValidateServiceUrl(config, ticket, uriInfo, state)
                       .build()
                       .toURL()
-                      .toString(),
+                      .toString()
+                      .replace("+", "%2B"),
                   session)
               .asResponse()) {
         if (response.getStatus() != 200) {
