@@ -171,7 +171,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         final String state) {
       try (SimpleHttp.Response response =
           SimpleHttp.doGet(
-                  createValidateServiceUrl(config, ticket, uriInfo, state)
+                  createValidateServiceUrl(config, ticket, uriInfo, state.replace('+', ' '))
                       .build()
                       .toURL()
                       .toString(),
