@@ -3,7 +3,7 @@ resources:
 
 - name: keycloak-cas
   type: git
-  icon: github
+  icon: key-link
   public: true
   source:
     branch: main
@@ -14,16 +14,43 @@ resources:
   - resources
   webhook_token: ((webhook-token))
 
+- name: keycloak
+  public: true
+  type: github-release
+  icon: key
+  source:
+    owner: keycloak
+    repository: keycloak
+    access_token: (("github.com"/token.token))
+    release: true
+    pre_release: false
+  tags:
+  - resources
+  webhook_token: ((webhook-token))
+
 jobs:
 
 - name: build
   public: true
   serial: true
   plan:
-  - get: keycloak-cas
-    trigger: true
+  - in_parallel:
 
-  - task: build-jar
+    - get: keycloak-cas
+      trigger: true
+
+    - get: keycloak
+      trigger: true
+      params:
+        globs:
+        - do-not-download-artifacts
+
+  - load_var: keycloak_version
+    file: keycloak/version
+    format: trim
+    reveal: true
+
+  - task: maven-build
     config:
       platform: linux
       image_resource:
@@ -42,6 +69,7 @@ jobs:
         dir: keycloak-cas
         args:
         - clean
+        - -Dkeycloak.version=((.:keycloak_version))
         - com.spotify.fmt:fmt-maven-plugin:check
         - package
         - deploy
