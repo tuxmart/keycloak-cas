@@ -34,7 +34,9 @@ jobs:
       inputs:
       - name: keycloak-cas
       params:
-        GITHUB_TOKEN: ((github-packages-token))
+        AWS_ACCESS_KEY_ID: ((aws/sts/sandbox.access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws/sts/sandbox.secret_key))
+        AWS_SESSION_TOKEN: ((aws/sts/sandbox.security_token))
       run:
         path: mvn
         dir: keycloak-cas
