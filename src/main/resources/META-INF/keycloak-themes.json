@@ -1,6 +1,0 @@
-{
-	"themes": [{
-		"name" : "keycloak-extended",
-		"types": [ "admin" ]
-	}]
-}
