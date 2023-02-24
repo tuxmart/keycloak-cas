@@ -57,7 +57,7 @@ jobs:
         type: registry-image
         source:
           repository: maven
-          tag: 3-amazoncorretto-11
+          tag: 3-amazoncorretto-17
       inputs:
       - name: keycloak-cas
       params:
