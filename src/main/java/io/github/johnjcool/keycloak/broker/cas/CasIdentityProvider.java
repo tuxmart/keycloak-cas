@@ -107,7 +107,10 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     private final CasIdentityProvider provider;
 
     Endpoint(
-        final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event, final CasIdentityProvider provider) {
+        final AuthenticationCallback callback,
+        final RealmModel realm,
+        final EventBuilder event,
+        final CasIdentityProvider provider) {
       this.callback = callback;
       this.realm = realm;
       this.event = event;
