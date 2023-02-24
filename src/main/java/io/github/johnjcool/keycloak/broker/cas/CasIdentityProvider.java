@@ -94,27 +94,27 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       final RealmModel realm,
       final org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback callback,
       final EventBuilder event) {
-    return new Endpoint(callback, realm, event);
+    return new Endpoint(callback, realm, event, this);
   }
 
   public final class Endpoint {
-    AuthenticationCallback callback;
-    RealmModel realm;
-    EventBuilder event;
-
-    @Context private KeycloakSession session;
-
-    @Context private ClientConnection clientConnection;
-
-    @Context private HttpHeaders headers;
-
-    @Context private UriInfo uriInfo;
+    private final AuthenticationCallback callback;
+    private final RealmModel realm;
+    private final EventBuilder event;
+    private final KeycloakSession session;
+    private final ClientConnection clientConnection;
+    private final HttpHeaders headers;
+    private final CasIdentityProvider provider;
 
     Endpoint(
-        final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event) {
+        final AuthenticationCallback callback, final RealmModel realm, final EventBuilder event, final CasIdentityProvider provider) {
       this.callback = callback;
       this.realm = realm;
       this.event = event;
+      this.provider = provider;
+      this.session = provider.session;
+      this.headers = session.getContext().getRequestHeaders();
+      this.clientConnection = session.getContext().getConnection();
     }
 
     @GET
@@ -124,7 +124,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       try {
         CasIdentityProviderConfig config = getConfig();
         BrokeredIdentityContext federatedIdentity =
-            getFederatedIdentity(config, ticket, uriInfo, state);
+            getFederatedIdentity(config, ticket, session.getContext().getUri(), state);
 
         return callback.authenticated(federatedIdentity);
       } catch (Exception e) {
@@ -210,7 +210,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         user.setUsername(success.getUser());
         user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
         user.setIdpConfig(config);
-        user.setIdp(CasIdentityProvider.this);
+        user.setIdp(provider);
         AuthenticationSessionModel authSession =
             this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
         session.getContext().setAuthenticationSession(authSession);
