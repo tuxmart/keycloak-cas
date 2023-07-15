@@ -3,9 +3,9 @@ package io.github.johnjcool.keycloak.broker.cas.jaxb;
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 import org.jboss.resteasy.plugins.providers.jaxb.AbstractJAXBProvider;
 
 @Provider

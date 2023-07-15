@@ -2,8 +2,8 @@ package io.github.johnjcool.keycloak.broker.cas.util;
 
 import io.github.johnjcool.keycloak.broker.cas.CasIdentityProvider;
 import io.github.johnjcool.keycloak.broker.cas.CasIdentityProviderConfig;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
