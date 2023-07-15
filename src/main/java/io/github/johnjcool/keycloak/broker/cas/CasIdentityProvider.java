@@ -8,9 +8,6 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValid
 
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
@@ -20,6 +17,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
