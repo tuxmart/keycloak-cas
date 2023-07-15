@@ -1,5 +1,5 @@
 ---
-resource-types:
+resource_types:
 - name: pull-request
   source:
     repository: teliaoss/github-pr-resource
