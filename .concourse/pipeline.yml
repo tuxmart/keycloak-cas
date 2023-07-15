@@ -111,17 +111,17 @@ jobs:
             submodules: true
           trigger: true
           version: every
-            - in_parallel:
-                steps:
-                  - do:
-                      - file: pull-request/.git/resource/head_sha
-                        format: trim
-                        load_var: commit
-                        reveal: true
-                      - file: pull-request/.git/resource/pr
-                        format: trim
-                        load_var: pull_request_key
-                        reveal: true
+        - in_parallel:
+            steps:
+              - do:
+                  - file: pull-request/.git/resource/head_sha
+                    format: trim
+                    load_var: commit
+                    reveal: true
+                  - file: pull-request/.git/resource/pr
+                    format: trim
+                    load_var: pull_request_key
+                    reveal: true
         - get: keycloak
           trigger: true
           params:
