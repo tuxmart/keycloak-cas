@@ -1,4 +1,14 @@
 ---
+resource_types:
+- name: pull-request
+  source:
+    repository: teliaoss/github-pr-resource
+    tag: latest
+  tags:
+    - resources
+  type: registry-image
+
+
 resources:
 
 - name: keycloak-cas
@@ -26,6 +36,19 @@ resources:
     pre_release: false
   tags:
   - resources
+  webhook_token: ((webhook-token))
+
+- icon: source-pull
+  name: pull-request
+  public: true
+  source:
+    access_token: (("github.com"/token.token))
+    base_branch: main
+    repository: RoboJackets/keycloak-cas
+    disable_forks: true
+  tags:
+    - resources
+  type: pull-request
   webhook_token: ((webhook-token))
 
 jobs:
@@ -75,3 +98,62 @@ jobs:
         - deploy
         - --settings
         - .concourse/settings.xml
+
+- name: build-pr
+  public: true
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+          - do:
+            - get: pull-request
+              params:
+                integration_tool: checkout
+                list_changed_files: true
+                submodules: true
+              trigger: true
+              version: every
+            - file: pull-request/.git/resource/head_sha
+              format: trim
+              load_var: commit
+              reveal: true
+            - file: pull-request/.git/resource/pr
+              format: trim
+              load_var: pull_request_key
+              reveal: true
+          - do:
+            - get: keycloak
+              trigger: true
+              params:
+                globs:
+                  - do-not-download-artifacts
+            - load_var: keycloak_version
+              file: keycloak/version
+              format: trim
+              reveal: true
+
+    - task: maven-build
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: maven
+            tag: 3-amazoncorretto-17
+        inputs:
+          - name: pull-request
+        params:
+          AWS_ACCESS_KEY_ID: ((aws/sts/sandbox.access_key))
+          AWS_SECRET_ACCESS_KEY: ((aws/sts/sandbox.secret_key))
+          AWS_SESSION_TOKEN: ((aws/sts/sandbox.security_token))
+        run:
+          path: mvn
+          dir: pull-request
+          args:
+            - clean
+            - -Dkeycloak.version=((.:keycloak_version))
+            - com.spotify.fmt:fmt-maven-plugin:check
+            - package
+            - deploy
+            - --settings
+            - .concourse/settings.xml

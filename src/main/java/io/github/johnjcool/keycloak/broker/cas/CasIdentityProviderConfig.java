@@ -6,9 +6,9 @@ public class CasIdentityProviderConfig extends IdentityProviderModel {
 
   private static final long serialVersionUID = 1L;
 
-  private static final String DEFAULT_CAS_LOGIN_SUFFFIX = "login";
-  private static final String DEFAULT_CAS_LOGOUT_SUFFFIX = "logout";
-  private static final String DEFAULT_CAS_SERVICE_VALIDATE_SUFFFIX = "serviceValidate";
+  private static final String DEFAULT_CAS_LOGIN_SUFFIX = "login";
+  private static final String DEFAULT_CAS_LOGOUT_SUFFIX = "logout";
+  private static final String DEFAULT_CAS_SERVICE_VALIDATE_SUFFIX = "serviceValidate";
   private static final String DEFAULT_CAS_3_PROTOCOL_PREFIX = "p3";
 
   public CasIdentityProviderConfig() {
@@ -52,12 +52,11 @@ public class CasIdentityProviderConfig extends IdentityProviderModel {
   }
 
   public String getCasServerLoginUrl() {
-    return String.format("%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_LOGIN_SUFFFIX);
+    return String.format("%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_LOGIN_SUFFIX);
   }
 
   public String getCasServerLogoutUrl() {
-    return String.format(
-        "%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_LOGOUT_SUFFFIX);
+    return String.format("%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_LOGOUT_SUFFIX);
   }
 
   public String getCasServiceValidateUrl() {
@@ -66,8 +65,8 @@ public class CasIdentityProviderConfig extends IdentityProviderModel {
             "%s/%s/%s",
             getConfig().get("casServerUrlPrefix"),
             DEFAULT_CAS_3_PROTOCOL_PREFIX,
-            DEFAULT_CAS_SERVICE_VALIDATE_SUFFFIX)
+            DEFAULT_CAS_SERVICE_VALIDATE_SUFFIX)
         : String.format(
-            "%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_SERVICE_VALIDATE_SUFFFIX);
+            "%s/%s", getConfig().get("casServerUrlPrefix"), DEFAULT_CAS_SERVICE_VALIDATE_SUFFIX);
   }
 }

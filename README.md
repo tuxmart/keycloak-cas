@@ -3,6 +3,12 @@
 Keycloak CAS Services
 =====================
 
+Local development
+-----------------------
+Make sure you have the following installed:
+- Java 17 (needs to match `maven.compiler.source`/`maven.compiler.target` in `pom.xml`)
+- Maven
+
 Using as maven dependency
 -------------------------
 You can use this module as dependency in your own modules.
