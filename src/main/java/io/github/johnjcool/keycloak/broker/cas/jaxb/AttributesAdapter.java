@@ -1,8 +1,8 @@
 package io.github.johnjcool.keycloak.broker.cas.jaxb;
 
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.List;
 import java.util.Map;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 public class AttributesAdapter extends XmlAdapter<AttributesWrapper, Map<String, List<String>>> {
 

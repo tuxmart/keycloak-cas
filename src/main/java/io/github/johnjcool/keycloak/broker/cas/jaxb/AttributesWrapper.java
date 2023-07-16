@@ -1,9 +1,9 @@
 package io.github.johnjcool.keycloak.broker.cas.jaxb;
 
+import jakarta.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlType;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Node;
 
 @XmlType
