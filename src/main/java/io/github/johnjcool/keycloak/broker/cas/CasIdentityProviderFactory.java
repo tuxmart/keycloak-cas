@@ -8,11 +8,12 @@ import org.keycloak.Config;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ConfiguredProvider;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
-public class CasIdentityProviderFactory
-    extends AbstractIdentityProviderFactory<CasIdentityProvider> {
+public class CasIdentityProviderFactory extends AbstractIdentityProviderFactory<CasIdentityProvider>
+    implements ConfiguredProvider {
 
   public static final String PROVIDER_ID = "cas";
 
