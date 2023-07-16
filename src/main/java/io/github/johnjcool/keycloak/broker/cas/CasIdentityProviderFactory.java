@@ -51,6 +51,7 @@ public class CasIdentityProviderFactory extends AbstractIdentityProviderFactory<
     return ProviderConfigurationBuilder.create()
         .property()
         .name("casServerUrlPrefix")
+        .type("string")
         .label("CAS server URL prefix")
         .helpText("The start of the CAS server URL, i.e. https://localhost:8443/cas")
         .add()
