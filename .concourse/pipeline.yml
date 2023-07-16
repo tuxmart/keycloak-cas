@@ -3,6 +3,7 @@ resource_types:
 - name: pull-request
   source:
     repository: teliaoss/github-pr-resource
+    tag: latest
   tags:
     - resources
   type: registry-image
@@ -102,32 +103,34 @@ jobs:
   public: true
   serial: true
   plan:
-    - get: pull-request
-      params:
-        integration_tool: checkout
-        list_changed_files: true
-        submodules: true
-      trigger: true
-      version: every
     - in_parallel:
-      - file: pull-request/.git/resource/head_sha
-        format: trim
-        load_var: commit
-        reveal: true
-      - file: pull-request/.git/resource/pr
-        format: trim
-        load_var: pull_request_key
-        reveal: true
-      - get: keycloak
-        trigger: true
-        params:
-          globs:
-            - do-not-download-artifacts
-
-    - load_var: keycloak_version
-      file: keycloak/version
-      format: trim
-      reveal: true
+        steps:
+          - do:
+            - get: pull-request
+              params:
+                integration_tool: checkout
+                list_changed_files: true
+                submodules: true
+              trigger: true
+              version: every
+            - file: pull-request/.git/resource/head_sha
+              format: trim
+              load_var: commit
+              reveal: true
+            - file: pull-request/.git/resource/pr
+              format: trim
+              load_var: pull_request_key
+              reveal: true
+          - do:
+            - get: keycloak
+              trigger: true
+              params:
+                globs:
+                  - do-not-download-artifacts
+            - load_var: keycloak_version
+              file: keycloak/version
+              format: trim
+              reveal: true
 
     - task: maven-build
       config:
