@@ -151,5 +151,6 @@ jobs:
             - -Dkeycloak.version=((.:keycloak_version))
             - com.spotify.fmt:fmt-maven-plugin:check
             - package
+            - deploy
             - --settings
             - .concourse/settings.xml
