@@ -69,7 +69,8 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       URI authenticationUrl = createAuthenticationUrl(getConfig(), request).build();
       return Response.seeOther(authenticationUrl).build();
     } catch (Exception e) {
-      throw new IdentityBrokerException("Could send authentication request to cas provider.", e);
+      throw new IdentityBrokerException(
+          "Could not send authentication request to cas provider.", e);
     }
   }
 

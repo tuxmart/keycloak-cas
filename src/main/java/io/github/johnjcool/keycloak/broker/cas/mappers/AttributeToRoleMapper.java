@@ -21,28 +21,28 @@ public class AttributeToRoleMapper extends AbstractAttributeMapper {
   private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
   static {
-    ProviderConfigProperty property;
-    ProviderConfigProperty property1;
-    property1 = new ProviderConfigProperty();
-    property1.setName(ATTRIBUTE);
-    property1.setLabel("Attribute Name");
-    property1.setHelpText("Name of attribute to search for in assertion.");
-    property1.setType(ProviderConfigProperty.STRING_TYPE);
-    configProperties.add(property1);
-    property1 = new ProviderConfigProperty();
-    property1.setName(ATTRIBUTE_VALUE);
-    property1.setLabel("Attribute Value");
-    property1.setHelpText(
-        "Value the attribute must have.  If the attribute is an array, then the value must be contained in the array.");
-    property1.setType(ProviderConfigProperty.STRING_TYPE);
-    configProperties.add(property1);
-    property = new ProviderConfigProperty();
-    property.setName(ConfigConstants.ROLE);
-    property.setLabel("Role");
-    property.setHelpText(
-        "Role to grant to user if attribute is present.  Click 'Select Role' button to browse roles, or just type it in the textbox.  To reference an application role the syntax is appname.approle, i.e. myapp.myrole");
-    property.setType(ProviderConfigProperty.ROLE_TYPE);
-    configProperties.add(property);
+    ProviderConfigProperty attributeName = new ProviderConfigProperty();
+    attributeName.setName(ATTRIBUTE);
+    attributeName.setLabel("Attribute Name");
+    attributeName.setHelpText("Name of attribute to search for in assertion.");
+    attributeName.setType(ProviderConfigProperty.STRING_TYPE);
+    configProperties.add(attributeName);
+
+    ProviderConfigProperty attributeValue = new ProviderConfigProperty();
+    attributeValue.setName(ATTRIBUTE_VALUE);
+    attributeValue.setLabel("Attribute Value");
+    attributeValue.setHelpText(
+        "Value the attribute must have. If the attribute is an array, then the value must be contained in the array.");
+    attributeValue.setType(ProviderConfigProperty.STRING_TYPE);
+    configProperties.add(attributeValue);
+
+    ProviderConfigProperty role = new ProviderConfigProperty();
+    role.setName(ConfigConstants.ROLE);
+    role.setLabel("Role");
+    role.setHelpText(
+        "Role to grant to user if attribute is present. Click 'Select Role' button to browse roles, or just type it in the textbox. To reference an application role the syntax is appname.approle, i.e. myapp.myrole");
+    role.setType(ProviderConfigProperty.ROLE_TYPE);
+    configProperties.add(role);
   }
 
   public static final String PROVIDER_ID = "cas-role-idp-mapper";

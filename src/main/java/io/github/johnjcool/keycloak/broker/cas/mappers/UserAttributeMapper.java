@@ -26,20 +26,20 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
   protected static final Logger logger = Logger.getLogger(UserAttributeMapper.class);
 
   static {
-    ProviderConfigProperty property;
-    property = new ProviderConfigProperty();
-    property.setName(ATTRIBUTE);
-    property.setLabel("Attribute");
-    property.setHelpText("Name of attribute to search for in assertion.");
-    property.setType(ProviderConfigProperty.STRING_TYPE);
-    configProperties.add(property);
-    property = new ProviderConfigProperty();
-    property.setName(USER_ATTRIBUTE);
-    property.setLabel("User Attribute Name");
-    property.setHelpText(
-        "User attribute name to store CAS attribute.  Use email, lastName, and firstName to map to those predefined user properties.");
-    property.setType(ProviderConfigProperty.STRING_TYPE);
-    configProperties.add(property);
+    ProviderConfigProperty casAttributeName = new ProviderConfigProperty();
+    casAttributeName.setName(ATTRIBUTE);
+    casAttributeName.setLabel("Attribute");
+    casAttributeName.setHelpText("Name of attribute to search for in assertion.");
+    casAttributeName.setType(ProviderConfigProperty.STRING_TYPE);
+    configProperties.add(casAttributeName);
+
+    ProviderConfigProperty keycloakAttributeName = new ProviderConfigProperty();
+    keycloakAttributeName.setName(USER_ATTRIBUTE);
+    keycloakAttributeName.setLabel("User Attribute Name");
+    keycloakAttributeName.setHelpText(
+        "User attribute name to store CAS attribute. Use email, lastName, and firstName to map to those predefined user properties.");
+    keycloakAttributeName.setType(ProviderConfigProperty.STRING_TYPE);
+    configProperties.add(keycloakAttributeName);
   }
 
   public static final String PROVIDER_ID = "cas-user-attribute-idp-mapper";
