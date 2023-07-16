@@ -51,13 +51,13 @@ public class CasIdentityProviderFactory extends AbstractIdentityProviderFactory<
     return ProviderConfigurationBuilder.create()
         .property()
         .name("casServerUrlPrefix")
-        .type("string")
+        .type(ProviderConfigProperty.STRING_TYPE)
         .label("CAS server URL prefix")
         .helpText("The start of the CAS server URL, i.e. https://localhost:8443/cas")
         .add()
         .property()
         .name("renew")
-        .type("boolean")
+        .type(ProviderConfigProperty.BOOLEAN_TYPE)
         .label("CAS renew")
         .helpText(
             "If enabled, renew=true will be sent to the CAS server, and users will be forced to "
@@ -65,7 +65,7 @@ public class CasIdentityProviderFactory extends AbstractIdentityProviderFactory<
         .add()
         .property()
         .name("gateway")
-        .type("boolean")
+        .type(ProviderConfigProperty.BOOLEAN_TYPE)
         .label("CAS gateway")
         .helpText(
             "Enables the CAS server gateway feature. Users who are logged out will not be automatically "
