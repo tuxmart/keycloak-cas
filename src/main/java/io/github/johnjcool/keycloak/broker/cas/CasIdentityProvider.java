@@ -98,7 +98,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     return new Endpoint(callback, realm, event, this);
   }
 
-  public final class Endpoint {
+  public static final class Endpoint {
     private final AuthenticationCallback callback;
     private final RealmModel realm;
     private final EventBuilder event;
@@ -106,6 +106,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     private final ClientConnection clientConnection;
     private final HttpHeaders headers;
     private final CasIdentityProvider provider;
+    private final CasIdentityProviderConfig config;
 
     Endpoint(
         final AuthenticationCallback callback,
@@ -119,6 +120,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       this.session = provider.session;
       this.headers = session.getContext().getRequestHeaders();
       this.clientConnection = session.getContext().getConnection();
+      this.config = provider.getConfig();
     }
 
     @GET
@@ -126,7 +128,6 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         @QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket,
         @QueryParam(PROVIDER_PARAMETER_STATE) final String state) {
       try {
-        CasIdentityProviderConfig config = getConfig();
         BrokeredIdentityContext federatedIdentity =
             getFederatedIdentity(config, ticket, session.getContext().getUri(), state);
 
