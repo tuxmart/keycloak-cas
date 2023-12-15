@@ -1,7 +1,7 @@
 # keycloak-cas
 CAS identity provider for Keycloak
 
-> **Note**
+> [!NOTE]
 > This package is actively maintained and used in production with the latest Keycloak release. However, we do not currently publish pre-built packages for external use.
 
 ## Local development
