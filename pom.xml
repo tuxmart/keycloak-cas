@@ -155,11 +155,11 @@
 	<distributionManagement>
 		<repository>
 			<id>s3</id>
-			<url>s3://robojackets-sandbox-public-artifacts/</url>
+			<url>s3://gatech-me-robojackets-public-artifacts/</url>
 		</repository>
 		<snapshotRepository>
 			<id>s3</id>
-			<url>s3://robojackets-sandbox-public-artifacts/</url>
+			<url>s3://gatech-me-robojackets-public-artifacts/</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
