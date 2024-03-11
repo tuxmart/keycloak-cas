@@ -99,7 +99,7 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
   }
 
   private boolean setIfNotEmpty(final Consumer<String> consumer, final List<String> values) {
-    if (values != null && !values.isEmpty() && ! values.get(0).isEmpty()) {
+    if (values != null && !values.isEmpty() && !values.get(0).isEmpty()) {
       consumer.accept(values.get(0));
       return true;
     }
