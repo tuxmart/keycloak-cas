@@ -98,10 +98,13 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
     }
   }
 
-  private void setIfNotEmpty(final Consumer<String> consumer, final List<String> values) {
-    if (values != null && !values.isEmpty()) {
+  private boolean setIfNotEmpty(final Consumer<String> consumer, final List<String> values) {
+    if (values != null && !values.isEmpty() && ! values.get(0).isEmpty()) {
       consumer.accept(values.get(0));
+      return true;
     }
+
+    return false;
   }
 
   @Override
@@ -116,14 +119,16 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
       logger.debug("updateBrokeredUser called with empty attribute");
       return;
     }
-    logger.debug("preprocessFederatedIdentity called with attribute " + attribute);
+    logger.debug("updateBrokeredUser called with attribute " + attribute);
 
     List<String> value = getAttributeValue(mapperModel, context);
 
     logger.debug("Values: " + value.toString());
 
     if (EMAIL.equalsIgnoreCase(attribute)) {
-      setIfNotEmpty(user::setEmail, value);
+      if (setIfNotEmpty(user::setEmail, value) && context.getIdpConfig().isTrustEmail()) {
+        user.setEmailVerified(true);
+      }
     } else if (FIRST_NAME.equalsIgnoreCase(attribute)) {
       setIfNotEmpty(user::setFirstName, value);
     } else if (LAST_NAME.equalsIgnoreCase(attribute)) {
