@@ -211,10 +211,9 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         }
         Success success = serviceResponse.getSuccess();
 
-        BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser());
+        BrokeredIdentityContext user = new BrokeredIdentityContext(success.getUser(), config);
         user.setUsername(success.getUser());
         user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
-        user.setIdpConfig(config);
         user.setIdp(provider);
         AuthenticationSessionModel authSession =
             this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
