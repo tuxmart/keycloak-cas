@@ -1,8 +1,7 @@
 package io.github.johnjcool.keycloak.broker.cas;
 
-import org.keycloak.models.IdentityProviderModel;
-
 import java.io.Serial;
+import org.keycloak.models.IdentityProviderModel;
 
 public class CasIdentityProviderConfig extends IdentityProviderModel {
 
