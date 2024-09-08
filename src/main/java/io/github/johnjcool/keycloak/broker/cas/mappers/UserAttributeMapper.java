@@ -101,8 +101,8 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
   }
 
   private void setIfNotEmpty(final Consumer<String> consumer, final List<String> values) {
-    if (values != null && !values.isEmpty() && !values.get(0).isEmpty()) {
-      consumer.accept(values.get(0));
+    if (values != null && !values.isEmpty() && !values.getFirst().isEmpty()) {
+      consumer.accept(values.getFirst());
     }
   }
 

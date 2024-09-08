@@ -4,12 +4,14 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Failure implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   @XmlAttribute private Code code;
 

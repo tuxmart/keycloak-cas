@@ -4,13 +4,15 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "serviceResponse", namespace = "http://www.yale.edu/tp/cas")
 public class ServiceResponse implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   @XmlElement(name = "authenticationFailure", namespace = "http://www.yale.edu/tp/cas")
   private Failure failure;

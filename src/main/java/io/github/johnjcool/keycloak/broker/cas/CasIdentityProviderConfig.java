@@ -2,9 +2,11 @@ package io.github.johnjcool.keycloak.broker.cas;
 
 import org.keycloak.models.IdentityProviderModel;
 
+import java.io.Serial;
+
 public class CasIdentityProviderConfig extends IdentityProviderModel {
 
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private static final String DEFAULT_CAS_LOGIN_SUFFIX = "login";
   private static final String DEFAULT_CAS_LOGOUT_SUFFIX = "logout";
