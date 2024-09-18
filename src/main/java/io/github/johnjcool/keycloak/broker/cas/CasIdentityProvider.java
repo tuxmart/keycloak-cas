@@ -1,6 +1,5 @@
 package io.github.johnjcool.keycloak.broker.cas;
 
-import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.PROVIDER_PARAMETER_STATE;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.PROVIDER_PARAMETER_TICKET;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createAuthenticationUrl;
 import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createLogoutUrl;
@@ -8,15 +7,11 @@ import static io.github.johnjcool.keycloak.broker.cas.util.UrlHelper.createValid
 
 import io.github.johnjcool.keycloak.broker.cas.model.ServiceResponse;
 import io.github.johnjcool.keycloak.broker.cas.model.Success;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -48,6 +43,8 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
   public static final String USER_ATTRIBUTES = "UserAttributes";
 
+  private static final String STATE_COOKIE_NAME = "__Host-cas_state";
+
   private static final Unmarshaller unmarshaller;
 
   static {
@@ -65,13 +62,15 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 
   @Override
   public Response performLogin(final AuthenticationRequest request) {
-    try {
-      URI authenticationUrl = createAuthenticationUrl(getConfig(), request).build();
-      return Response.seeOther(authenticationUrl).build();
-    } catch (Exception e) {
-      throw new IdentityBrokerException(
-          "Could not send authentication request to cas provider.", e);
-    }
+    return Response.seeOther(createAuthenticationUrl(getConfig(), request).build())
+        .cookie(
+            new NewCookie.Builder(STATE_COOKIE_NAME)
+                .value(request.getState().getEncoded())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .build())
+        .build();
   }
 
   @Override
@@ -80,7 +79,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       final UserSessionModel userSession,
       final UriInfo uriInfo,
       final RealmModel realm) {
-    URI logoutUrl = createLogoutUrl(getConfig(), userSession, realm, uriInfo).build();
+    URI logoutUrl = createLogoutUrl(getConfig(), realm, uriInfo).build();
     return Response.status(302).location(logoutUrl).build();
   }
 
@@ -101,7 +100,6 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
   public static final class Endpoint {
     private final AuthenticationCallback callback;
     private final RealmModel realm;
-    private final EventBuilder event;
     private final KeycloakSession session;
     private final ClientConnection clientConnection;
     private final HttpHeaders headers;
@@ -115,7 +113,6 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         final CasIdentityProvider provider) {
       this.callback = callback;
       this.realm = realm;
-      this.event = event;
       this.provider = provider;
       this.session = provider.session;
       this.headers = session.getContext().getRequestHeaders();
@@ -126,19 +123,12 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     @GET
     public Response authResponse(
         @QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket,
-        @QueryParam(PROVIDER_PARAMETER_STATE) final String state) {
-      try {
-        BrokeredIdentityContext federatedIdentity =
-            getFederatedIdentity(config, ticket, session.getContext().getUri(), state);
+        @CookieParam(STATE_COOKIE_NAME) final Cookie stateCookie) {
+      BrokeredIdentityContext federatedIdentity =
+          getFederatedIdentity(
+              config, ticket, session.getContext().getUri(), stateCookie.getValue());
 
-        return callback.authenticated(federatedIdentity);
-      } catch (Exception e) {
-        logger.error("Failed to complete CAS authentication", e);
-      }
-      event.event(EventType.LOGIN);
-      event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
-      return ErrorPage.error(
-          session, null, Status.EXPECTATION_FAILED, Messages.IDENTITY_PROVIDER_UNEXPECTED_ERROR);
+      return callback.authenticated(federatedIdentity);
     }
 
     @GET
@@ -177,11 +167,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       logger.debug("Current state value: " + state);
       try (SimpleHttp.Response response =
           SimpleHttp.doGet(
-                  createValidateServiceUrl(config, ticket, uriInfo, state)
-                      .build()
-                      .toURL()
-                      .toString()
-                      .replace("+", "%2B"),
+                  createValidateServiceUrl(config, ticket, uriInfo).build().toURL().toString(),
                   session)
               .asResponse()) {
         if (response.getStatus() != 200) {
@@ -216,7 +202,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
         user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
         user.setIdp(provider);
         AuthenticationSessionModel authSession =
-            this.callback.getAndVerifyAuthenticationSession(state.replace(' ', '+'));
+            this.callback.getAndVerifyAuthenticationSession(state);
         session.getContext().setAuthenticationSession(authSession);
         user.setAuthenticationSession(authSession);
         return user;
