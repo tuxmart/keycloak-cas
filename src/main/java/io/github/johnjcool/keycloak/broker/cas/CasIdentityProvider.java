@@ -94,7 +94,7 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       final RealmModel realm,
       final org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback callback,
       final EventBuilder event) {
-    return new Endpoint(callback, realm, event, this);
+    return new Endpoint(callback, realm, this);
   }
 
   public static final class Endpoint {
@@ -109,7 +109,6 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     Endpoint(
         final AuthenticationCallback callback,
         final RealmModel realm,
-        final EventBuilder event,
         final CasIdentityProvider provider) {
       this.callback = callback;
       this.realm = realm;
