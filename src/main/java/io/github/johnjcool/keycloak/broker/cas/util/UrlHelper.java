@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.RealmsResource;
 
@@ -15,7 +14,6 @@ public final class UrlHelper {
   private static final String PROVIDER_PARAMETER_RENEW = "renew";
   private static final String PROVIDER_PARAMETER_GATEWAY = "gateway";
   public static final String PROVIDER_PARAMETER_TICKET = "ticket";
-  public static final String PROVIDER_PARAMETER_STATE = "state";
 
   private UrlHelper() {
     // util
@@ -25,9 +23,7 @@ public final class UrlHelper {
       final CasIdentityProviderConfig config, final AuthenticationRequest request) {
     UriBuilder builder =
         UriBuilder.fromUri(config.getCasServerLoginUrl())
-            .queryParam(
-                PROVIDER_PARAMETER_SERVICE,
-                createServiceUrl(request.getRedirectUri(), request.getState().getEncoded()));
+            .queryParam(PROVIDER_PARAMETER_SERVICE, request.getRedirectUri());
     if (config.isRenew()) {
       builder.queryParam(PROVIDER_PARAMETER_RENEW, config.isRenew());
     }
@@ -38,16 +34,11 @@ public final class UrlHelper {
   }
 
   public static UriBuilder createValidateServiceUrl(
-      final CasIdentityProviderConfig config,
-      final String ticket,
-      final UriInfo uriInfo,
-      final String state) {
+      final CasIdentityProviderConfig config, final String ticket, final UriInfo uriInfo) {
     UriBuilder builder =
         UriBuilder.fromUri(config.getCasServiceValidateUrl())
             .queryParam(PROVIDER_PARAMETER_TICKET, ticket)
-            .queryParam(
-                PROVIDER_PARAMETER_SERVICE,
-                createServiceUrl(uriInfo.getAbsolutePath().toString(), state));
+            .queryParam(PROVIDER_PARAMETER_SERVICE, uriInfo.getAbsolutePath().toString());
     if (config.isRenew()) {
       builder.queryParam(PROVIDER_PARAMETER_RENEW, config.isRenew());
     }
@@ -55,22 +46,14 @@ public final class UrlHelper {
   }
 
   public static UriBuilder createLogoutUrl(
-      final CasIdentityProviderConfig config,
-      final UserSessionModel userSession,
-      final RealmModel realm,
-      final UriInfo uriInfo) {
+      final CasIdentityProviderConfig config, final RealmModel realm, final UriInfo uriInfo) {
     final String redirect =
         RealmsResource.brokerUrl(uriInfo)
             .path(IdentityBrokerService.class, "getEndpoint")
             .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
-            .queryParam(PROVIDER_PARAMETER_STATE, userSession.getId())
             .build(realm.getName(), config.getAlias())
             .toString();
     return UriBuilder.fromUri(config.getCasServerLogoutUrl())
         .queryParam(PROVIDER_PARAMETER_SERVICE, redirect);
-  }
-
-  private static String createServiceUrl(final String serviceUrlPrefix, final String state) {
-    return String.format("%s?%s=%s", serviceUrlPrefix, PROVIDER_PARAMETER_STATE, state);
   }
 }
