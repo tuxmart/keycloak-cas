@@ -85,11 +85,7 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 
     List<String> value = getAttributeValue(mapperModel, context);
 
-    if (value != null) {
-      logger.debug("Values: " + value);
-    } else {
-      logger.debug("Values: null");
-    }
+    logger.debug("Values: " + value);
 
     if (EMAIL.equalsIgnoreCase(attribute)) {
       setIfNotEmpty(context::setEmail, value);
@@ -124,11 +120,7 @@ public class UserAttributeMapper extends AbstractAttributeMapper {
 
     List<String> value = getAttributeValue(mapperModel, context);
 
-    if (value != null) {
-      logger.debug("Values: " + value);
-    } else {
-      logger.debug("Values: null");
-    }
+    logger.debug("Values: " + value);
 
     if (EMAIL.equalsIgnoreCase(attribute)) {
       setIfNotEmpty(user::setEmail, value);
