@@ -123,8 +123,9 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     public Response authResponse(
         @QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket,
         @CookieParam(STATE_COOKIE_NAME) final Cookie stateCookie) {
-      return callback.authenticated(getFederatedIdentity(
-        config, ticket, session.getContext().getUri(), stateCookie.getValue()));
+      return callback.authenticated(
+          getFederatedIdentity(
+              config, ticket, session.getContext().getUri(), stateCookie.getValue()));
     }
 
     @GET
