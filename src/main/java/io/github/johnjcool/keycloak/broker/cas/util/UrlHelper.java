@@ -47,13 +47,13 @@ public final class UrlHelper {
 
   public static UriBuilder createLogoutUrl(
       final CasIdentityProviderConfig config, final RealmModel realm, final UriInfo uriInfo) {
-    final String redirect =
-        RealmsResource.brokerUrl(uriInfo)
-            .path(IdentityBrokerService.class, "getEndpoint")
-            .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
-            .build(realm.getName(), config.getAlias())
-            .toString();
     return UriBuilder.fromUri(config.getCasServerLogoutUrl())
-        .queryParam(PROVIDER_PARAMETER_SERVICE, redirect);
+        .queryParam(
+            PROVIDER_PARAMETER_SERVICE,
+            RealmsResource.brokerUrl(uriInfo)
+                .path(IdentityBrokerService.class, "getEndpoint")
+                .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
+                .build(realm.getName(), config.getAlias())
+                .toString());
   }
 }
