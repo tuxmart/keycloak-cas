@@ -17,7 +17,6 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URI;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
@@ -79,8 +78,9 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
       final UserSessionModel userSession,
       final UriInfo uriInfo,
       final RealmModel realm) {
-    URI logoutUrl = createLogoutUrl(getConfig(), realm, uriInfo).build();
-    return Response.status(302).location(logoutUrl).build();
+    return Response.status(302)
+        .location(createLogoutUrl(getConfig(), realm, uriInfo).build())
+        .build();
   }
 
   @Override
@@ -123,11 +123,8 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
     public Response authResponse(
         @QueryParam(PROVIDER_PARAMETER_TICKET) final String ticket,
         @CookieParam(STATE_COOKIE_NAME) final Cookie stateCookie) {
-      BrokeredIdentityContext federatedIdentity =
-          getFederatedIdentity(
-              config, ticket, session.getContext().getUri(), stateCookie.getValue());
-
-      return callback.authenticated(federatedIdentity);
+      return callback.authenticated(getFederatedIdentity(
+        config, ticket, session.getContext().getUri(), stateCookie.getValue()));
     }
 
     @GET
