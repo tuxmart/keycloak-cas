@@ -47,7 +47,7 @@ public final class UrlHelper {
 
   public static UriBuilder createLogoutUrl(
       final CasIdentityProviderConfig config, final RealmModel realm, final UriInfo uriInfo) {
-    return UriBuilder.fromUri(config.getCasServerLogoutUrl())
+    UriBuilder builder = UriBuilder.fromUri(config.getCasServerLogoutUrl())
         .queryParam(
             PROVIDER_PARAMETER_SERVICE,
             RealmsResource.brokerUrl(uriInfo)
@@ -55,5 +55,8 @@ public final class UrlHelper {
                 .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
                 .build(realm.getName(), config.getAlias())
                 .toString());
+    System.out.println("=====url-debug=====");
+    System.out.println(builder.toString());
+    return builder;
   }
 }
