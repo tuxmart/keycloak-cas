@@ -47,14 +47,15 @@ public final class UrlHelper {
 
   public static UriBuilder createLogoutUrl(
       final CasIdentityProviderConfig config, final RealmModel realm, final UriInfo uriInfo) {
-    UriBuilder builder = UriBuilder.fromUri(config.getCasServerLogoutUrl())
-        .queryParam(
-            PROVIDER_PARAMETER_SERVICE,
-            RealmsResource.brokerUrl(uriInfo)
-                .path(IdentityBrokerService.class, "getEndpoint")
-                .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
-                .build(realm.getName(), config.getAlias())
-                .toString());
+    UriBuilder builder =
+        UriBuilder.fromUri(config.getCasServerLogoutUrl())
+            .queryParam(
+                PROVIDER_PARAMETER_SERVICE,
+                RealmsResource.brokerUrl(uriInfo)
+                    .path(IdentityBrokerService.class, "getEndpoint")
+                    .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
+                    .build(realm.getName(), config.getAlias())
+                    .toString());
     System.out.println("=====url-debug=====");
     System.out.println(builder.toString());
     return builder;
