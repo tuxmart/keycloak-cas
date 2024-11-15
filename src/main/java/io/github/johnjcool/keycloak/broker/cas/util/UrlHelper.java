@@ -8,12 +8,15 @@ import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.IdentityBrokerService;
 import org.keycloak.services.resources.RealmsResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class UrlHelper {
   private static final String PROVIDER_PARAMETER_SERVICE = "service";
   private static final String PROVIDER_PARAMETER_RENEW = "renew";
   private static final String PROVIDER_PARAMETER_GATEWAY = "gateway";
   public static final String PROVIDER_PARAMETER_TICKET = "ticket";
+  private static final Logger log = LoggerFactory.getLogger(UrlHelper.class);
 
   private UrlHelper() {
     // util
@@ -56,8 +59,8 @@ public final class UrlHelper {
                     .path(CasIdentityProvider.Endpoint.class, "logoutResponse")
                     .build(realm.getName(), config.getAlias())
                     .toString());
-    System.out.println("=====url-debug=====");
-    System.out.println(builder.toString());
+    log.debug("=====url-debug=====");
+    log.debug("builder.toString()");
     return builder;
   }
 }
